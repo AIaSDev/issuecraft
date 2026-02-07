@@ -12,7 +12,13 @@ class IssueModel(Base):
     title = Column(String(255), nullable=False)
     body = Column(Text, nullable=True)
     status = Column(String(16), nullable=False, default="open")
-    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    # Timestamp columns use lambda to get current UTC time at insertion/update
+    # Lambda is needed because SQLAlchemy calls the default function at column definition time otherwise
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
+    )
     updated_at = Column(
         DateTime,
         nullable=False,
