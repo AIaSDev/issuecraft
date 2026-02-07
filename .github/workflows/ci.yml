@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -14,8 +14,11 @@ jobs:
       DATABASE_URL: sqlite:///:memory:
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -27,7 +30,7 @@ jobs:
       - name: Unit tests
         run: pytest -q tests/unit
 
-      - name: Integration tests (SQLite)
+      - name: Integration tests
         run: pytest -q tests/integration
 
   build:
@@ -35,7 +38,8 @@ jobs:
     needs: test
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Build Docker image
         run: docker build -t issuecraft:${{ github.sha }} .
