@@ -1,5 +1,5 @@
 """Use case for creating an issue."""
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.entities.issue import Issue
 from src.interfaces.gateways.issue_repository import IssueRepository
@@ -13,7 +13,7 @@ class CreateIssue:
     
     def execute(self, title: str, description: str, status: str = "open") -> Issue:
         """Create a new issue with the given parameters."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         issue = Issue(
             id=None,
             title=title,

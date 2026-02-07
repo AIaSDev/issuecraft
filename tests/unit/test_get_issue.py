@@ -1,5 +1,5 @@
 """Unit tests for GetIssue use case."""
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock
 
 from src.entities.issue import Issue
@@ -10,7 +10,7 @@ def test_get_issue_use_case():
     """Test GetIssue use case with existing issue."""
     # Mock repository
     mock_repo = Mock()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     expected_issue = Issue(
         id=1,
         title="Test Issue",

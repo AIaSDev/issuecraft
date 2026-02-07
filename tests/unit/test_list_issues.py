@@ -1,5 +1,5 @@
 """Unit tests for ListIssues use case."""
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock
 
 from src.entities.issue import Issue
@@ -10,7 +10,7 @@ def test_list_issues_use_case():
     """Test ListIssues use case."""
     # Mock repository
     mock_repo = Mock()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     expected_issues = [
         Issue(
             id=1,

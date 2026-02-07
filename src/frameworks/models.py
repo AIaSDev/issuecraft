@@ -1,10 +1,15 @@
 """SQLAlchemy models for database persistence."""
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+
+
+def utc_now():
+    """Return current UTC time as naive datetime."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class IssueModel(Base):
@@ -16,5 +21,5 @@ class IssueModel(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     status = Column(String(50), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=utc_now)
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)

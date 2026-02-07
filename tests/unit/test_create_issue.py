@@ -1,5 +1,5 @@
 """Unit tests for CreateIssue use case."""
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock
 
 from src.entities.issue import Issue
@@ -10,7 +10,7 @@ def test_create_issue_use_case():
     """Test CreateIssue use case."""
     # Mock repository
     mock_repo = Mock()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     expected_issue = Issue(
         id=1,
         title="Test Issue",
@@ -44,7 +44,7 @@ def test_create_issue_use_case():
 def test_create_issue_default_status():
     """Test CreateIssue use case with default status."""
     mock_repo = Mock()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     expected_issue = Issue(
         id=1,
         title="Test Issue",

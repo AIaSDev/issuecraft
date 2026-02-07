@@ -1,13 +1,13 @@
 """Unit tests for Issue entity."""
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.entities.issue import Issue
 
 
 def test_issue_creation():
     """Test creating a valid issue."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     issue = Issue(
         id=1,
         title="Test Issue",
@@ -27,7 +27,7 @@ def test_issue_creation():
 
 def test_issue_empty_title_raises_error():
     """Test that empty title raises ValueError."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     
     with pytest.raises(ValueError, match="Issue title cannot be empty"):
         Issue(
@@ -42,7 +42,7 @@ def test_issue_empty_title_raises_error():
 
 def test_issue_invalid_status_raises_error():
     """Test that invalid status raises ValueError."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     
     with pytest.raises(ValueError, match="Invalid status"):
         Issue(
@@ -57,7 +57,7 @@ def test_issue_invalid_status_raises_error():
 
 def test_issue_whitespace_title_raises_error():
     """Test that whitespace-only title raises ValueError."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     
     with pytest.raises(ValueError, match="Issue title cannot be empty"):
         Issue(
