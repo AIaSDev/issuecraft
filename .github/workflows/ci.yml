@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   test:
@@ -32,25 +32,3 @@ jobs:
 
       - name: Integration tests
         run: pytest -q tests/integration
-
-  build:
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: docker build -t issuecraft:${{ github.sha }} .
-
-      - name: Save Docker image
-        run: |
-          docker save issuecraft:${{ github.sha }} | gzip > /tmp/issuecraft.tar.gz
-
-      - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: issuecraft-docker-image
-          path: /tmp/issuecraft.tar.gz
-          retention-days: 7
