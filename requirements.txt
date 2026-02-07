@@ -1,6 +1,5 @@
 fastapi
 uvicorn[standard]
-sqlalchemy>=2.0
+SQLAlchemy>=2.0
 psycopg[binary]
 pytest
-httpx
