@@ -10,9 +10,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render deploy (pull latest image)
-        uses: renderinc/action-deploy@v1
+      - name: Deploy to Render
+        uses: ttskch/render-deploy@v1.0.0
         with:
-          apiKey: ${{ secrets.RENDER_API_KEY }}
-          serviceId: ${{ secrets.RENDER_SERVICE_ID }}
-          deployConfirm: true
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
