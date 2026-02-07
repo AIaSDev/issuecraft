@@ -1,12 +1,12 @@
-# IssueCraft
+# BAIssue
 
-A minimal **FastAPI** issue tracker demonstrating **Clean Architecture** with **SQLite** (development & CI) and **PostgreSQL** (production) support.
+A minimal **FastAPI** Business AI issue tracker demonstrating Clean Architecture **Clean Architecture** with **SQLite** (development & CI) and **PostgreSQL** (production) support.
 
 ---
 
 ## What is this?
 
-**IssueCraft** is a small REST API for managing issues (a minimal subset of GitHub Issues).  
+**BAIssue** is a small REST API for managing issues (a minimal subset of GitHub Issues).  
 It is designed primarily for **education** and demonstrates:
 
 - Clean Architecture terminology and layering
@@ -56,7 +56,7 @@ src/app/
 
 ## Web UI and API Docs
 
-IssueCraft provides two ways to interact with the system:
+BAIssue provides two ways to interact with the system:
 
 | Path | Purpose |
 |-----|---------|
@@ -181,13 +181,13 @@ pytest -q tests/integration
 ### Build
 
 ```bash
-docker build -t issuecraft .
+docker build -t baissue .
 ```
 
 ### Run (SQLite)
 
 ```bash
-docker run -p 8000:8000 issuecraft
+docker run -p 8000:8000 baissue
 ```
 
 ### Run (PostgreSQL)
@@ -195,7 +195,7 @@ docker run -p 8000:8000 issuecraft
 ```bash
 docker run -p 8000:8000 \
   -e DATABASE_URL=postgresql+psycopg://user:password@host:5432/database \
-  issuecraft
+  baissue
 ```
 
 ---
@@ -220,8 +220,8 @@ git push origin v0.1.0
 ```
 
 Images:
-- `ghcr.io/<owner>/issuecraft:v0.1.0`
-- `ghcr.io/<owner>/issuecraft:latest`
+- `ghcr.io/<owner>/baissue:v0.1.0`
+- `ghcr.io/<owner>/baissue:latest`
 
 ### Manual Continuous Deployment (Render)
 
