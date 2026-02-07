@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+  <meta charset="UTF-8" />
+  <title>IssueCraft UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-full p-6 font-sans text-gray-800">
+
+  <header class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold">IssueCraft</h1>
+    <a href="/docs" class="text-blue-600 hover:underline">Swagger / API Docs</a>
+  </header>
+
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-2">Create Issue</h2>
+    <div class="flex gap-2">
+      <input id="title" placeholder="Title" class="border p-2 flex-1" />
+      <input id="body" placeholder="Body" class="border p-2 flex-1" />
+      <button onclick="createIssue()" class="bg-blue-600 text-white px-4 py-2 rounded">
+        Create
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold mb-2">Issues</h2>
+    <button onclick="listIssues()" class="bg-gray-700 text-white px-3 py-1 rounded mb-3">
+      Refresh List
+    </button>
+    <ul id="issues" class="space-y-2"></ul>
+  </section>
+
+  <script>
+    const api = "/issues";
+
+    async function createIssue() {
+      const title = document.getElementById("title").value;
+      const body = document.getElementById("body").value;
+      try {
+        await fetch(api, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, body })
+        });
+        await listIssues();
+      } catch (e) {
+        alert("Error creating issue");
+      }
+    }
+
+    async function listIssues() {
+      const res = await fetch(api);
+      const issues = await res.json();
+      const list = document.getElementById("issues");
+      list.innerHTML = "";
+      issues.forEach(i => {
+        const item = document.createElement("li");
+        item.className = "border p-3 rounded bg-white";
+
+        item.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="font-semibold">#${i.id}</span>
+              <span class="ml-2">${i.title}</span>
+              <span class="ml-3 text-sm text-gray-500">${i.status}</span>
+            </div>
+
+            <div class="space-x-2">
+              <button onclick="closeIssue(${i.id})" class="text-yellow-600 hover:underline">Close</button>
+              <button onclick="reopenIssue(${i.id})" class="text-green-600 hover:underline">Reopen</button>
+              <button onclick="deleteIssue(${i.id})" class="text-red-600 hover:underline">Delete</button>
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-700 mt-1">${i.body ?? ""}</p>
+        `;
+
+        list.appendChild(item);
+      });
+    }
+
+    async function closeIssue(id) {
+      await fetch(`/issues/${id}/close`, { method: "PATCH" });
+      await listIssues();
+    }
+
+    async function reopenIssue(id) {
+      await fetch(`/issues/${id}/reopen`, { method: "PATCH" });
+      await listIssues();
+    }
+
+    async function deleteIssue(id) {
+      await fetch(`/issues/${id}`, { method: "DELETE" });
+      await listIssues();
+    }
+
+    // load on start
+    listIssues();
+  </script>
+
+</body>
+</html>

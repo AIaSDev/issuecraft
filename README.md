@@ -24,7 +24,7 @@ The project follows **Clean Architecture**, with dependencies pointing inward.
 ```
 src/app/
 ├── core/                      # Configuration and database setup
-│   ├── config.py              # Environment-based configuration
+│   ├── config.py              # Environment-based configuration (.env optional)
 │   └── database.py            # SQLAlchemy engine, session, Base
 ├── entities/                  # Pure domain entities
 │   └── issue.py               # Issue entity with validation and status
@@ -41,6 +41,8 @@ src/app/
 │   └── persistence/           # Database implementations
 │       ├── models.py          # SQLAlchemy ORM models
 │       └── sqlalchemy_repository.py
+├── frontend/                  # Minimal static web UI (HTML + Tailwind)
+│   │   └── index.html
 └── main.py                    # Application entry point
 ```
 
@@ -49,6 +51,20 @@ src/app/
 - **Entities** and **use cases** do not depend on FastAPI or SQLAlchemy
 - **Interfaces** define boundaries (ports)
 - **Frameworks** implement technical details (web, database)
+
+---
+
+## Web UI and API Docs
+
+IssueCraft provides two ways to interact with the system:
+
+| Path | Purpose |
+|-----|---------|
+| `/ui` | Minimal web interface (HTML + JavaScript) |
+| `/docs` | Swagger / OpenAPI documentation |
+| `/` | Redirects to `/ui` |
+
+The web UI is intentionally minimal and exists only to demonstrate how the API can be consumed.
 
 ---
 
@@ -101,6 +117,8 @@ ENV=production
 DATABASE_URL=postgresql+psycopg://user:password@host:5432/database
 ```
 
+> `.env` files must never be committed to version control.
+
 ---
 
 ## Running Locally
@@ -125,7 +143,9 @@ export PYTHONPATH=$PWD/src
 uvicorn app.main:app --reload
 ```
 
-Open:
+Open in your browser:
+
+- UI: http://localhost:8000/ui
 - API docs: http://localhost:8000/docs
 
 ---
