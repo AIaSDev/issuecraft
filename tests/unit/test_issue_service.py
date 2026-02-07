@@ -1,7 +1,7 @@
 import pytest
 
 from app.use_cases.issue_service import IssueService
-from tests.unit.fake_repository import FakeIssueRepository
+from fake_repository import FakeIssueRepository
 
 
 def test_create_issue_with_body():
