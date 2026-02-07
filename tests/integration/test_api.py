@@ -4,24 +4,21 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import tempfile
 
-from src.core.database import get_db
-from src.frameworks.models import Base
+from app.core.database import get_db
+from app.frameworks.persistence.models import Base
 
-# Use a temporary file-based SQLite for testing to avoid threading issues
-TEST_DATABASE_URL = f"sqlite:///{tempfile.gettempdir()}/test_issues.db"
+# Use in-memory SQLite for integration tests
+TEST_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///:memory:")
 
 
 @pytest.fixture
 def test_db():
     """Create a fresh database for each test."""
-    # Remove existing test database
-    test_db_path = f"{tempfile.gettempdir()}/test_issues.db"
-    if os.path.exists(test_db_path):
-        os.remove(test_db_path)
-    
-    engine = create_engine(TEST_DATABASE_URL)
+    engine = create_engine(
+        TEST_DATABASE_URL,
+        connect_args={"check_same_thread": False} if "sqlite" in TEST_DATABASE_URL else {}
+    )
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     
     Base.metadata.create_all(bind=engine)
@@ -32,16 +29,15 @@ def test_db():
         db.close()
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
-        # Clean up test database file
-        if os.path.exists(test_db_path):
-            os.remove(test_db_path)
 
 
 @pytest.fixture
 def client(test_db):
     """Create a test client with database override."""
     # Import app here to avoid early initialization
-    from src.frameworks.fastapi_app import app
+    from app.frameworks.web.app import create_app
+    
+    app = create_app()
     
     def override_get_db():
         try:
@@ -66,8 +62,7 @@ def test_create_issue(client):
     """Test creating an issue via API."""
     issue_data = {
         "title": "Test Issue",
-        "description": "Test description",
-        "status": "open"
+        "body": "Test body"
     }
     
     response = client.post("/issues", json=issue_data)
@@ -75,31 +70,31 @@ def test_create_issue(client):
     
     data = response.json()
     assert data["title"] == "Test Issue"
-    assert data["description"] == "Test description"
-    assert data["status"] == "open"
+    assert data["body"] == "Test body"
     assert "id" in data
     assert "created_at" in data
     assert "updated_at" in data
 
 
-def test_create_issue_with_invalid_status(client):
-    """Test creating an issue with invalid status."""
+def test_create_issue_without_body(client):
+    """Test creating an issue without body."""
     issue_data = {
-        "title": "Test Issue",
-        "description": "Test description",
-        "status": "invalid_status"
+        "title": "Test Issue"
     }
     
     response = client.post("/issues", json=issue_data)
-    assert response.status_code == 400
+    assert response.status_code == 200
+    
+    data = response.json()
+    assert data["title"] == "Test Issue"
+    assert data["body"] is None
 
 
 def test_create_issue_with_empty_title(client):
     """Test creating an issue with empty title."""
     issue_data = {
         "title": "",
-        "description": "Test description",
-        "status": "open"
+        "body": "Test body"
     }
     
     response = client.post("/issues", json=issue_data)
@@ -116,16 +111,8 @@ def test_list_issues_empty(client):
 def test_list_issues(client):
     """Test listing issues after creating some."""
     # Create issues
-    issue1 = {
-        "title": "Issue 1",
-        "description": "Description 1",
-        "status": "open"
-    }
-    issue2 = {
-        "title": "Issue 2",
-        "description": "Description 2",
-        "status": "closed"
-    }
+    issue1 = {"title": "Issue 1", "body": "Body 1"}
+    issue2 = {"title": "Issue 2", "body": "Body 2"}
     
     client.post("/issues", json=issue1)
     client.post("/issues", json=issue2)
@@ -143,11 +130,7 @@ def test_list_issues(client):
 def test_get_issue(client):
     """Test getting a specific issue."""
     # Create an issue
-    issue_data = {
-        "title": "Test Issue",
-        "description": "Test description",
-        "status": "open"
-    }
+    issue_data = {"title": "Test Issue", "body": "Test body"}
     create_response = client.post("/issues", json=issue_data)
     issue_id = create_response.json()["id"]
     
@@ -158,8 +141,7 @@ def test_get_issue(client):
     data = response.json()
     assert data["id"] == issue_id
     assert data["title"] == "Test Issue"
-    assert data["description"] == "Test description"
-    assert data["status"] == "open"
+    assert data["body"] == "Test body"
 
 
 def test_get_issue_not_found(client):

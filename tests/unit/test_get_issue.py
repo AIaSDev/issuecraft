@@ -1,42 +1,32 @@
 """Unit tests for GetIssue use case."""
-from datetime import datetime, timezone
-from unittest.mock import Mock
-
-from src.entities.issue import Issue
-from src.use_cases.get_issue import GetIssue
+from app.use_cases.get_issue import GetIssue
+from app.use_cases.create_issue import CreateIssue
+from tests.unit.fake_repository import FakeIssueRepository
 
 
-def test_get_issue_use_case():
+def test_get_issue():
     """Test GetIssue use case with existing issue."""
-    # Mock repository
-    mock_repo = Mock()
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
-    expected_issue = Issue(
-        id=1,
-        title="Test Issue",
-        description="Test description",
-        status="open",
-        created_at=now,
-        updated_at=now
-    )
-    mock_repo.get_by_id.return_value = expected_issue
+    repo = FakeIssueRepository()
+    create_use_case = CreateIssue(repo)
+    get_use_case = GetIssue(repo)
     
-    # Execute use case
-    use_case = GetIssue(mock_repo)
-    result = use_case.execute(1)
+    # Create an issue
+    created = create_use_case.execute(title="Test Issue", body="Test body")
     
-    # Verify
-    assert result == expected_issue
-    mock_repo.get_by_id.assert_called_once_with(1)
+    # Get the issue
+    result = get_use_case.execute(created.id)
+    
+    assert result is not None
+    assert result.id == created.id
+    assert result.title == "Test Issue"
+    assert result.body == "Test body"
 
 
 def test_get_issue_not_found():
     """Test GetIssue use case with non-existent issue."""
-    mock_repo = Mock()
-    mock_repo.get_by_id.return_value = None
+    repo = FakeIssueRepository()
+    use_case = GetIssue(repo)
     
-    use_case = GetIssue(mock_repo)
     result = use_case.execute(999)
     
     assert result is None
-    mock_repo.get_by_id.assert_called_once_with(999)

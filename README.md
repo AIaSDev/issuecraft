@@ -1,178 +1,215 @@
-# issuecraft
+# IssueCraft
 
-A minimal FastAPI issue tracker demonstrating pragmatic Clean Architecture with SQLite, PostgreSQL, pytest, and Docker.
+A minimal FastAPI issue tracker demonstrating Clean Architecture with SQLite and PostgreSQL support.
 
-## Architecture
+## What is this?
 
-This project implements Clean Architecture with the following layers:
+IssueCraft is a simple issue tracking API built with FastAPI that demonstrates Clean Architecture principles. It supports SQLite for development/testing and PostgreSQL for production deployment.
+
+## Architecture Overview
+
+The project follows Clean Architecture with clear separation of concerns:
 
 ```
-src/
-├── entities/           # Core business entities (Issue)
-├── use_cases/          # Business logic (CreateIssue, ListIssues, GetIssue)
-├── interfaces/         
-│   ├── controllers/    # FastAPI controllers
-│   └── gateways/       # Repository interfaces
-├── frameworks/         # FastAPI app, SQLAlchemy ORM
-└── core/              # Configuration and database setup
+src/app/
+├── core/                   # Configuration, database setup, dependencies
+├── entities/               # Pure domain entities (Issue)
+├── use_cases/              # Business logic (CreateIssue, ListIssues, GetIssue)
+├── interfaces/
+│   ├── controllers/        # FastAPI routers/handlers (HTTP concerns)
+│   └── gateways/           # Repository interfaces (Protocol/ABC)
+└── frameworks/
+    ├── web/                # FastAPI app wiring
+    └── persistence/        # SQLAlchemy ORM models + repository implementation
 ```
 
-## Features
+**Dependency Rule**: Entities and use_cases do not import from interfaces or frameworks. Dependencies point inward.
 
-- **Create, List, and Get Issues**: Simple CRUD operations for issue tracking
-- **Clean Architecture**: Clear separation of concerns with dependency inversion
-- **Dual Database Support**: 
-  - SQLite for development and CI/integration tests
-  - PostgreSQL for production via `DATABASE_URL` environment variable
-- **Sync SQLAlchemy**: Straightforward synchronous ORM operations
-- **Comprehensive Testing**: 
-  - 10 unit tests for entities and use cases
-  - 8 integration tests for API endpoints
-- **Docker Support**: Production-ready containerization
-- **CI/CD**: GitHub Actions workflow for building and uploading Docker images
+## API Endpoints
 
-## Quick Start
+- `POST /issues` - Create an issue (title required, body optional)
+- `GET /issues` - List all issues
+- `GET /issues/{issue_id}` - Get a specific issue
 
-### Local Development
+## Running Locally
 
-1. **Install dependencies**:
+### Prerequisites
+
+- Python 3.11+
+- pip
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. **Run the application**:
+### Run the Application
+
+By default, the application uses SQLite (`app.db` file):
+
 ```bash
-uvicorn src.frameworks.fastapi_app:app --reload
+export PYTHONPATH=$PWD/src
+uvicorn app.main:app --reload
 ```
 
-3. **Access the API**:
-- API: http://localhost:8000
-- Interactive docs: http://localhost:8000/docs
+The API will be available at http://localhost:8000
+
+- API docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
 
-### Docker
+### Example Usage
 
-1. **Build the image**:
-```bash
-docker build -t issuecraft .
-```
-
-2. **Run the container**:
-```bash
-docker run -p 8000:8000 issuecraft
-```
-
-3. **With PostgreSQL** (optional):
-```bash
-docker run -p 8000:8000 \
-  -e DATABASE_URL=postgresql://user:pass@host:5432/dbname \
-  issuecraft
-```
-
-## API Endpoints
-
-### Create an Issue
+Create an issue:
 ```bash
 curl -X POST http://localhost:8000/issues \
   -H "Content-Type: application/json" \
-  -d '{"title":"Bug fix","description":"Fix login issue","status":"open"}'
+  -d '{"title":"Fix bug","body":"Description of the bug"}'
 ```
 
-### List All Issues
+List all issues:
 ```bash
 curl http://localhost:8000/issues
 ```
 
-### Get Issue by ID
+Get a specific issue:
 ```bash
 curl http://localhost:8000/issues/1
 ```
 
-## Testing
+## Running Tests
 
-Run all tests:
+The project has two types of tests:
+
+### Unit Tests
+
+Unit tests use a fake in-memory repository (no FastAPI, no SQLAlchemy):
+
 ```bash
-pytest
+export PYTHONPATH=$PWD/src
+pytest -q tests/unit
 ```
 
-Run with coverage:
+### Integration Tests
+
+Integration tests use FastAPI TestClient with SQLite in-memory database:
+
 ```bash
-pytest --cov=src --cov-report=html
+export PYTHONPATH=$PWD/src
+export DATABASE_URL=sqlite:///:memory:
+pytest -q tests/integration
 ```
 
-Run only unit tests:
+### Run All Tests
+
 ```bash
-pytest tests/unit
+export PYTHONPATH=$PWD/src
+export DATABASE_URL=sqlite:///:memory:
+pytest -q
 ```
 
-Run only integration tests:
+## Running with Docker
+
+### Build the Image
+
 ```bash
-pytest tests/integration
+docker build -t issuecraft .
 ```
 
-## Configuration
+### Run with SQLite (default)
 
-Configure via environment variables:
+```bash
+docker run -p 8000:8000 issuecraft
+```
 
-- `DATABASE_URL`: Database connection string (default: `sqlite:///./issues.db`)
-  - SQLite: `sqlite:///./issues.db`
-  - PostgreSQL: `postgresql://user:password@localhost:5432/dbname`
+### Run with PostgreSQL
+
+```bash
+docker run -p 8000:8000 \
+  -e DATABASE_URL=postgresql+psycopg://user:pass@host:5432/dbname \
+  issuecraft
+```
+
+## Deployment on Render
+
+To deploy on Render or any other cloud platform:
+
+1. Set the `DATABASE_URL` environment variable to your PostgreSQL connection string:
+   ```
+   postgresql+psycopg://user:password@host:5432/database
+   ```
+
+2. The application will automatically:
+   - Connect to PostgreSQL using psycopg
+   - Create tables on startup using `Base.metadata.create_all()`
+
+## Database Configuration
+
+The application uses a single environment variable for database configuration:
+
+- **Development**: `sqlite:///./app.db` (file-based SQLite, default)
+- **CI/Testing**: `sqlite:///:memory:` (in-memory SQLite)
+- **Production**: `postgresql+psycopg://...` (PostgreSQL with psycopg)
+
+No additional configuration files needed. Simply set `DATABASE_URL` to switch databases.
 
 ## Project Structure
 
 ```
 issuecraft/
-├── .github/
-│   └── workflows/
-│       └── docker-build.yml    # CI/CD workflow
-├── src/
-│   ├── entities/               # Business entities
-│   │   └── issue.py           # Issue entity
-│   ├── use_cases/             # Application business logic
-│   │   ├── create_issue.py    # Create issue use case
-│   │   ├── list_issues.py     # List issues use case
-│   │   └── get_issue.py       # Get issue use case
+├── src/app/
+│   ├── core/                      # Config, database, dependencies
+│   │   ├── config.py             # Configuration from environment
+│   │   └── database.py           # Database engine and session
+│   ├── entities/                  # Domain entities
+│   │   └── issue.py              # Issue entity
+│   ├── use_cases/                 # Business logic
+│   │   ├── create_issue.py       # Create issue use case
+│   │   ├── list_issues.py        # List issues use case
+│   │   └── get_issue.py          # Get issue use case
 │   ├── interfaces/
-│   │   ├── controllers/       # API controllers
+│   │   ├── controllers/          # HTTP layer
 │   │   │   └── issue_controller.py
-│   │   └── gateways/          # Repository interfaces
+│   │   └── gateways/             # Repository interfaces
 │   │       └── issue_repository.py
-│   ├── frameworks/            # External frameworks
-│   │   ├── fastapi_app.py     # FastAPI application
-│   │   ├── models.py          # SQLAlchemy models
-│   │   └── sqlalchemy_repository.py
-│   └── core/                  # Core configuration
-│       ├── config.py          # Configuration
-│       └── database.py        # Database setup
+│   ├── frameworks/
+│   │   ├── web/                  # FastAPI app
+│   │   │   └── app.py           # App factory and routes
+│   │   └── persistence/          # Database layer
+│   │       ├── models.py         # SQLAlchemy models
+│   │       └── sqlalchemy_repository.py
+│   └── main.py                   # Entry point
 ├── tests/
-│   ├── unit/                  # Unit tests
-│   └── integration/           # Integration tests
-├── Dockerfile                 # Docker configuration
-├── requirements.txt           # Python dependencies
-└── pytest.ini                # Pytest configuration
+│   ├── unit/                     # Unit tests (fake repo)
+│   └── integration/              # Integration tests (TestClient)
+├── .github/workflows/ci.yml      # CI pipeline
+├── Dockerfile                     # Docker configuration
+├── requirements.txt              # Python dependencies
+└── README.md                     # This file
 ```
 
 ## Development
 
-### Code Quality
+### Clean Architecture Principles
 
-The project follows these principles:
-
-- **Clean Architecture**: Dependencies point inward
-- **Separation of Concerns**: Each layer has a specific responsibility
-- **Dependency Inversion**: High-level modules don't depend on low-level modules
-- **Testability**: Business logic isolated from frameworks
-- **Type Hints**: Python type annotations for better IDE support
+1. **Entities** are pure Python dataclasses with validation
+2. **Use Cases** contain business logic and depend only on repository interfaces
+3. **Controllers** handle HTTP concerns (request/response)
+4. **Gateways** define repository interfaces (ABC)
+5. **Frameworks** contain SQLAlchemy and FastAPI implementations
 
 ### Adding New Features
 
-1. **Add entity** in `src/entities/` if needed
-2. **Create use case** in `src/use_cases/`
-3. **Implement gateway** in `src/interfaces/gateways/` if needed
-4. **Add controller** in `src/interfaces/controllers/`
-5. **Register routes** in `src/frameworks/fastapi_app.py`
-6. **Write tests** in `tests/unit/` and `tests/integration/`
+1. Define entity in `entities/`
+2. Create use case in `use_cases/`
+3. Add repository interface in `interfaces/gateways/`
+4. Implement repository in `frameworks/persistence/`
+5. Add controller in `interfaces/controllers/`
+6. Register routes in `frameworks/web/app.py`
+7. Write unit tests (with fake repo) and integration tests
 
 ## License
 
-This project is provided as-is for educational and demonstration purposes.
+This project is for educational purposes.

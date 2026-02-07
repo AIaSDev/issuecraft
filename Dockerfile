@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Set PYTHONPATH
+ENV PYTHONPATH=/app/src
+
 # Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -13,4 +16,4 @@ COPY src/ /app/src/
 EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "src.frameworks.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

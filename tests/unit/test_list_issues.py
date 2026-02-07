@@ -1,52 +1,32 @@
 """Unit tests for ListIssues use case."""
-from datetime import datetime, timezone
-from unittest.mock import Mock
-
-from src.entities.issue import Issue
-from src.use_cases.list_issues import ListIssues
+from app.use_cases.list_issues import ListIssues
+from app.use_cases.create_issue import CreateIssue
+from tests.unit.fake_repository import FakeIssueRepository
 
 
-def test_list_issues_use_case():
+def test_list_issues():
     """Test ListIssues use case."""
-    # Mock repository
-    mock_repo = Mock()
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
-    expected_issues = [
-        Issue(
-            id=1,
-            title="Issue 1",
-            description="Description 1",
-            status="open",
-            created_at=now,
-            updated_at=now
-        ),
-        Issue(
-            id=2,
-            title="Issue 2",
-            description="Description 2",
-            status="closed",
-            created_at=now,
-            updated_at=now
-        )
-    ]
-    mock_repo.list_all.return_value = expected_issues
+    repo = FakeIssueRepository()
+    create_use_case = CreateIssue(repo)
+    list_use_case = ListIssues(repo)
     
-    # Execute use case
-    use_case = ListIssues(mock_repo)
-    result = use_case.execute()
+    # Create some issues
+    create_use_case.execute(title="Issue 1", body="Body 1")
+    create_use_case.execute(title="Issue 2", body="Body 2")
     
-    # Verify
-    assert result == expected_issues
+    # List issues
+    result = list_use_case.execute()
+    
     assert len(result) == 2
-    mock_repo.list_all.assert_called_once()
+    assert result[0].title == "Issue 1"
+    assert result[1].title == "Issue 2"
 
 
 def test_list_issues_empty():
     """Test ListIssues use case with no issues."""
-    mock_repo = Mock()
-    mock_repo.list_all.return_value = []
+    repo = FakeIssueRepository()
+    use_case = ListIssues(repo)
     
-    use_case = ListIssues(mock_repo)
     result = use_case.execute()
     
     assert result == []

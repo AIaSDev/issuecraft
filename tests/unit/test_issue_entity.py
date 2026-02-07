@@ -2,7 +2,7 @@
 import pytest
 from datetime import datetime, timezone
 
-from src.entities.issue import Issue
+from app.entities.issue import Issue
 
 
 def test_issue_creation():
@@ -11,18 +11,32 @@ def test_issue_creation():
     issue = Issue(
         id=1,
         title="Test Issue",
-        description="Test description",
-        status="open",
+        body="Test body",
         created_at=now,
         updated_at=now
     )
     
     assert issue.id == 1
     assert issue.title == "Test Issue"
-    assert issue.description == "Test description"
-    assert issue.status == "open"
+    assert issue.body == "Test body"
     assert issue.created_at == now
     assert issue.updated_at == now
+
+
+def test_issue_without_body():
+    """Test creating an issue without body."""
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    issue = Issue(
+        id=1,
+        title="Test Issue",
+        body=None,
+        created_at=now,
+        updated_at=now
+    )
+    
+    assert issue.id == 1
+    assert issue.title == "Test Issue"
+    assert issue.body is None
 
 
 def test_issue_empty_title_raises_error():
@@ -33,23 +47,7 @@ def test_issue_empty_title_raises_error():
         Issue(
             id=1,
             title="",
-            description="Test description",
-            status="open",
-            created_at=now,
-            updated_at=now
-        )
-
-
-def test_issue_invalid_status_raises_error():
-    """Test that invalid status raises ValueError."""
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
-    
-    with pytest.raises(ValueError, match="Invalid status"):
-        Issue(
-            id=1,
-            title="Test Issue",
-            description="Test description",
-            status="invalid",
+            body="Test body",
             created_at=now,
             updated_at=now
         )
@@ -63,8 +61,7 @@ def test_issue_whitespace_title_raises_error():
         Issue(
             id=1,
             title="   ",
-            description="Test description",
-            status="open",
+            body="Test body",
             created_at=now,
             updated_at=now
         )

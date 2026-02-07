@@ -1,66 +1,31 @@
 """Unit tests for CreateIssue use case."""
-from datetime import datetime, timezone
-from unittest.mock import Mock
-
-from src.entities.issue import Issue
-from src.use_cases.create_issue import CreateIssue
+from app.use_cases.create_issue import CreateIssue
+from tests.unit.fake_repository import FakeIssueRepository
 
 
-def test_create_issue_use_case():
-    """Test CreateIssue use case."""
-    # Mock repository
-    mock_repo = Mock()
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
-    expected_issue = Issue(
-        id=1,
-        title="Test Issue",
-        description="Test description",
-        status="open",
-        created_at=now,
-        updated_at=now
-    )
-    mock_repo.create.return_value = expected_issue
+def test_create_issue_with_body():
+    """Test CreateIssue use case with body."""
+    repo = FakeIssueRepository()
+    use_case = CreateIssue(repo)
     
-    # Execute use case
-    use_case = CreateIssue(mock_repo)
-    result = use_case.execute(
-        title="Test Issue",
-        description="Test description",
-        status="open"
-    )
+    result = use_case.execute(title="Test Issue", body="Test body")
     
-    # Verify
-    assert result == expected_issue
-    mock_repo.create.assert_called_once()
-    
-    # Verify the issue passed to repository has correct attributes
-    call_args = mock_repo.create.call_args[0][0]
-    assert call_args.title == "Test Issue"
-    assert call_args.description == "Test description"
-    assert call_args.status == "open"
-    assert call_args.id is None  # ID should be None before persistence
+    assert result.id == 1
+    assert result.title == "Test Issue"
+    assert result.body == "Test body"
+    assert result.created_at is not None
+    assert result.updated_at is not None
 
 
-def test_create_issue_default_status():
-    """Test CreateIssue use case with default status."""
-    mock_repo = Mock()
-    now = datetime.now(timezone.utc).replace(tzinfo=None)
-    expected_issue = Issue(
-        id=1,
-        title="Test Issue",
-        description="Test description",
-        status="open",
-        created_at=now,
-        updated_at=now
-    )
-    mock_repo.create.return_value = expected_issue
+def test_create_issue_without_body():
+    """Test CreateIssue use case without body."""
+    repo = FakeIssueRepository()
+    use_case = CreateIssue(repo)
     
-    use_case = CreateIssue(mock_repo)
-    result = use_case.execute(
-        title="Test Issue",
-        description="Test description"
-    )
+    result = use_case.execute(title="Test Issue")
     
-    # Verify default status is "open"
-    call_args = mock_repo.create.call_args[0][0]
-    assert call_args.status == "open"
+    assert result.id == 1
+    assert result.title == "Test Issue"
+    assert result.body is None
+    assert result.created_at is not None
+    assert result.updated_at is not None
