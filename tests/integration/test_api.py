@@ -4,8 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.core.database import get_db
-from app.core.database import Base  # Base should live in core.database
+from app.core.database import Base, get_db
 from app.frameworks.web.app import create_app
 
 
