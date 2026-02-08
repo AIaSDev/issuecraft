@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Integer, String, Text
 
-from app.core.database import Base
+from app.infrastructure.database import Base
 
 
 def utc_now():

@@ -4,11 +4,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.core.database import Base, get_db
-from app.frameworks.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
-from app.frameworks.web.app import create_app
+from app.infrastructure.database import Base, get_db
+from app.infrastructure.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
+from app.infrastructure.web.app import create_app
 from app.interfaces.dependencies import get_issue_service
-from app.use_cases.issue_service import IssueService
+from app.application.issue_use_cases import IssueService
 
 
 @pytest.fixture

@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.entities.issue import Issue, IssueStatus
-from app.interfaces.gateways.issue_repository import IssueRepository
+from app.domain.issue import Issue, IssueStatus
+from app.application.repositories.issue_repository import IssueRepository
 
 
 class IssueService:

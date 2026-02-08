@@ -23,35 +23,34 @@ The project follows **Clean Architecture**, with dependencies pointing inward.
 
 ```
 src/app/
-├── core/                      # Configuration and database setup
-│   ├── config.py              # Environment-based configuration (.env optional)
-│   └── database.py            # SQLAlchemy engine, session, Base
-├── entities/                  # Pure domain entities
-│   └── issue.py               # Issue entity with validation and status
-├── use_cases/                 # Application services (business logic)
-│   └── issue_service.py
+├── domain/                         # Pure domain entities
+│   └── issue.py                    # Issue entity with validation and status
+├── application/                    # Application services (business logic)
+│   ├── issue_use_cases.py          # Issue use cases / business logic
+│   └── repositories/               # Repository interfaces (ports)
+│       └── issue_repository.py
 ├── interfaces/
-│   ├── controllers/           # HTTP layer (FastAPI routers)
+│   ├── api/                        # HTTP layer (FastAPI routers)
 │   │   └── issue_api.py
-│   ├── gateways/              # Repository interfaces (ports)
-│   │   └── issue_repository.py
-│   └── dependencies.py        # Interface-level dependency definitions (ports → use cases)
-├── frameworks/
-│   ├── web/                   # FastAPI application wiring
-│   │   └── app.py             # App factory and dependency wiring
-│   └── persistence/           # Database implementations
-│       ├── models.py          # SQLAlchemy ORM models
-│       └── sqlalchemy_repository.py
-├── frontend/                  # Minimal static web UI
-│   └── index.html
-└── main.py                    # Application entry point
+│   └── dependencies.py             # Interface-level dependency definitions (ports → use cases)
+├── infrastructure/
+│   ├── config.py                   # Environment-based configuration (.env optional)
+│   ├── database.py                 # SQLAlchemy engine, session, Base
+│   ├── persistence/                # Database implementations
+│   │   ├── sqlalchemy_models.py    # SQLAlchemy ORM models
+│   │   └── sqlalchemy_repository.py
+│   └── web/                        # FastAPI application wiring
+│       ├── app.py                  # App factory and dependency wiring
+│       └── static/                 # Minimal static web UI
+│           └── index.html
+└── main.py                         # Application entry point
 ```
 
 ### Dependency Rule
 
-- **Entities** and **use cases** do not depend on FastAPI or SQLAlchemy
+- **Domain** and **application** layers do not depend on FastAPI or SQLAlchemy
 - **Interfaces** define boundaries (ports)
-- **Frameworks** implement technical details (web, database)
+- **Infrastructure** implements technical details (web, database)
 
 ---
 

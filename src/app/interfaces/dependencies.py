@@ -1,4 +1,4 @@
-from app.use_cases.issue_service import IssueService
+from app.application.issue_use_cases import IssueService
 
 
 def get_issue_service() -> IssueService:

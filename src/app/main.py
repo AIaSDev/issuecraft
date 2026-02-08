@@ -1,1 +1,1 @@
-from app.frameworks.web.app import app
+from app.infrastructure.web.app import app

@@ -1,7 +1,7 @@
 import pytest
 
-from app.entities.issue import IssueStatus
-from app.use_cases.issue_service import IssueService
+from app.domain.issue import IssueStatus
+from app.application.issue_use_cases import IssueService
 from fake_repository import FakeIssueRepository
 
 

@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker, declarative_base
 from sqlalchemy.pool import StaticPool
 
-from app.core.config import DATABASE_URL
+from app.infrastructure.config import DATABASE_URL
 
 Base = declarative_base()
 
@@ -24,7 +24,7 @@ SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 def init_db() -> None:
     """Initialize database tables (dev/CI convenience)."""
-    from app.frameworks.persistence import models  # ensure models are imported
+    from app.infrastructure.persistence import sqlalchemy_models  # ensure models are imported
     Base.metadata.create_all(bind=engine)
 
 

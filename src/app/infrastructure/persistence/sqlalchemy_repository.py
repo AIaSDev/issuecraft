@@ -2,9 +2,9 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.entities.issue import Issue, IssueStatus
-from app.frameworks.persistence.models import IssueModel
-from app.interfaces.gateways.issue_repository import IssueRepository
+from app.domain.issue import Issue, IssueStatus
+from app.infrastructure.persistence.sqlalchemy_models import IssueModel
+from app.application.repositories.issue_repository import IssueRepository
 
 
 class SQLAlchemyIssueRepository(IssueRepository):

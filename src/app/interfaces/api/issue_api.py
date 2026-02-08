@@ -4,9 +4,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.entities.issue import IssueStatus
+from app.domain.issue import IssueStatus
 from app.interfaces.dependencies import get_issue_service
-from app.use_cases.issue_service import IssueService
+from app.application.issue_use_cases import IssueService
 
 router = APIRouter(prefix="/issues", tags=["issues"])
 

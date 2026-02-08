@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from app.entities.issue import Issue, IssueStatus
+from app.domain.issue import Issue, IssueStatus
 
 
 class IssueRepository(ABC):

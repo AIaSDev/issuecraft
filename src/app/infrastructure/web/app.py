@@ -3,12 +3,12 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
-from app.core.config import API_TITLE, API_VERSION, API_DESCRIPTION
-from app.core.database import get_db
-from app.frameworks.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
-from app.interfaces.controllers.issue_api import router as issues_router
+from app.infrastructure.config import API_TITLE, API_VERSION, API_DESCRIPTION
+from app.infrastructure.database import get_db
+from app.infrastructure.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
+from app.interfaces.api.issue_api import router as issues_router
 from app.interfaces.dependencies import get_issue_service
-from app.use_cases.issue_service import IssueService
+from app.application.issue_use_cases import IssueService
 
 
 def create_app(init_db: bool = True) -> FastAPI:
@@ -30,14 +30,14 @@ def create_app(init_db: bool = True) -> FastAPI:
     def health_check():
         return {"status": "healthy"}
 
-    app.mount("/ui", StaticFiles(directory="src/app/frontend", html=True), name="ui")
+    app.mount("/ui", StaticFiles(directory="src/app/infrastructure/web/static", html=True), name="ui")
 
     @app.get("/", include_in_schema=False)
     def root():
         return RedirectResponse(url="/ui", status_code=302)
 
     if init_db:
-        from app.core.database import init_db as _init_db
+        from app.infrastructure.database import init_db as _init_db
         _init_db()
 
     return app
