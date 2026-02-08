@@ -5,7 +5,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base, get_db
+from app.frameworks.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
 from app.frameworks.web.app import create_app
+from app.use_cases.issue_service import IssueService
 
 
 @pytest.fixture
@@ -34,8 +36,16 @@ def client(db_session):
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
+
+    def override_issue_service():
+        repo = SQLAlchemyIssueRepository(db_session)
+        return IssueService(repo)
+
+    app.dependency_overrides[IssueService] = override_issue_service
+
     with TestClient(app) as c:
         yield c
+
     app.dependency_overrides.clear()
 
 
@@ -47,7 +57,7 @@ def test_health_check(client):
 
 def test_create_issue(client):
     r = client.post("/issues", json={"title": "Test Issue", "body": "Test body"})
-    assert r.status_code == 201  # important
+    assert r.status_code == 201
     data = r.json()
     assert data["title"] == "Test Issue"
     assert data["body"] == "Test body"
