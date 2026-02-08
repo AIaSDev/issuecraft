@@ -33,16 +33,17 @@ src/app/
 ├── interfaces/
 │   ├── controllers/           # HTTP layer (FastAPI routers)
 │   │   └── issue_api.py
-│   └── gateways/              # Repository interfaces (ports)
-│       └── issue_repository.py
+│   ├── gateways/              # Repository interfaces (ports)
+│   │   └── issue_repository.py
+│   └── dependencies.py        # Interface-level dependency definitions (ports → use cases)
 ├── frameworks/
 │   ├── web/                   # FastAPI application wiring
-│   │   └── app.py
+│   │   └── app.py             # App factory and dependency wiring
 │   └── persistence/           # Database implementations
 │       ├── models.py          # SQLAlchemy ORM models
 │       └── sqlalchemy_repository.py
-├── frontend/                  # Minimal static web UI (HTML + Tailwind)
-│   │   └── index.html
+├── frontend/                  # Minimal static web UI
+│   └── index.html
 └── main.py                    # Application entry point
 ```
 
