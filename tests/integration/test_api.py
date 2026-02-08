@@ -7,6 +7,7 @@ from sqlalchemy.pool import StaticPool
 from app.core.database import Base, get_db
 from app.frameworks.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
 from app.frameworks.web.app import create_app
+from app.interfaces.dependencies import get_issue_service
 from app.use_cases.issue_service import IssueService
 
 
@@ -35,13 +36,12 @@ def client(db_session):
     def override_get_db():
         yield db_session
 
-    app.dependency_overrides[get_db] = override_get_db
-
     def override_issue_service():
         repo = SQLAlchemyIssueRepository(db_session)
         return IssueService(repo)
 
-    app.dependency_overrides[IssueService] = override_issue_service
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_issue_service] = override_issue_service
 
     with TestClient(app) as c:
         yield c

@@ -7,6 +7,7 @@ from app.core.config import API_TITLE, API_VERSION, API_DESCRIPTION
 from app.core.database import get_db
 from app.frameworks.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
 from app.interfaces.controllers.issue_api import router as issues_router
+from app.interfaces.dependencies import get_issue_service
 from app.use_cases.issue_service import IssueService
 
 
@@ -21,7 +22,7 @@ def create_app(init_db: bool = True) -> FastAPI:
         repo = SQLAlchemyIssueRepository(db)
         return IssueService(repo)
 
-    app.dependency_overrides[IssueService] = issue_service_provider
+    app.dependency_overrides[get_issue_service] = issue_service_provider
 
     app.include_router(issues_router)
 
