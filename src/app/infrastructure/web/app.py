@@ -51,6 +51,3 @@ def create_app(init_db: bool = True) -> FastAPI:
 
 
 app = create_app()
-
-
-app = create_app()
