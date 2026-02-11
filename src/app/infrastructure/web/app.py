@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -17,11 +17,13 @@ def create_app(init_db: bool = True) -> FastAPI:
         description=API_DESCRIPTION,
     )
 
-    def get_issue_service(db: Session = Depends(get_db)) -> IssueService:
+    def service_factory(request: Request) -> IssueService:
+        db_generator = app.dependency_overrides.get(get_db, get_db)
+        db = next(db_generator())
         repo = SQLAlchemyIssueRepository(db)
         return IssueService(repo)
 
-    app.dependency_overrides[issue_api.get_service] = get_issue_service
+    app.state.service_factory = service_factory
     app.include_router(issue_api.router)
 
     @app.get("/health")

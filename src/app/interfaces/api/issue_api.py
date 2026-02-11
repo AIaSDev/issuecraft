@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List, Optional, Annotated
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from app.domain.issue import IssueStatus
@@ -24,15 +24,14 @@ class IssueResponse(BaseModel):
 
 router = APIRouter(prefix="/issues", tags=["issues"])
 
-def get_service() -> IssueService:
-    raise NotImplementedError("Service dependency must be injected")
+
+def _service(request: Request) -> IssueService:
+    return request.app.state.service_factory(request)
 
 
 @router.post("", response_model=IssueResponse, status_code=201)
-def create_issue(
-    payload: IssueCreate,
-    service: Annotated[IssueService, Depends(get_service)]
-):
+def create_issue(payload: IssueCreate, request: Request):
+    service = _service(request)
     try:
         return service.create_issue(payload.title, payload.body)
     except ValueError as e:
@@ -40,15 +39,14 @@ def create_issue(
 
 
 @router.get("", response_model=List[IssueResponse])
-def list_issues(service: Annotated[IssueService, Depends(get_service)]):
+def list_issues(request: Request):
+    service = _service(request)
     return service.list_issues()
 
 
 @router.get("/{issue_id}", response_model=IssueResponse)
-def get_issue(
-    issue_id: int,
-    service: Annotated[IssueService, Depends(get_service)]
-):
+def get_issue(issue_id: int, request: Request):
+    service = _service(request)
     issue = service.get_issue(issue_id)
     if issue is None:
         raise HTTPException(status_code=404, detail="Issue not found")
@@ -56,10 +54,8 @@ def get_issue(
 
 
 @router.patch("/{issue_id}/close", response_model=IssueResponse)
-def close_issue(
-    issue_id: int,
-    service: Annotated[IssueService, Depends(get_service)]
-):
+def close_issue(issue_id: int, request: Request):
+    service = _service(request)
     issue = service.close_issue(issue_id)
     if issue is None:
         raise HTTPException(status_code=404, detail="Issue not found")
@@ -67,10 +63,8 @@ def close_issue(
 
 
 @router.patch("/{issue_id}/reopen", response_model=IssueResponse)
-def reopen_issue(
-    issue_id: int,
-    service: Annotated[IssueService, Depends(get_service)]
-):
+def reopen_issue(issue_id: int, request: Request):
+    service = _service(request)
     issue = service.reopen_issue(issue_id)
     if issue is None:
         raise HTTPException(status_code=404, detail="Issue not found")
@@ -78,9 +72,7 @@ def reopen_issue(
 
 
 @router.delete("/{issue_id}", status_code=204)
-def delete_issue(
-    issue_id: int,
-    service: Annotated[IssueService, Depends(get_service)]
-):
+def delete_issue(issue_id: int, request: Request):
+    service = _service(request)
     if not service.delete_issue(issue_id):
         raise HTTPException(status_code=404, detail="Issue not found")
