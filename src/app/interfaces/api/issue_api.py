@@ -22,12 +22,10 @@ class IssueResponse(BaseModel):
     updated_at: datetime
 
 
-class IssueRouter:
+class IssueAPI:
     def __init__(self, get_service_dependency):
         self.router = APIRouter(prefix="/issues", tags=["issues"])
-        self._setup_routes(get_service_dependency)
 
-    def _setup_routes(self, get_service_dependency):
         @self.router.post("", response_model=IssueResponse, status_code=201)
         def create_issue(
             payload: IssueCreate,
