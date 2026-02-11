@@ -5,10 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.infrastructure.database import Base, get_db
-from app.infrastructure.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
 from app.infrastructure.web.app import create_app
-from app.interfaces.dependencies import get_issue_service
-from app.application.issue_use_cases import IssueService
 
 
 @pytest.fixture
@@ -36,12 +33,7 @@ def client(db_session):
     def override_get_db():
         yield db_session
 
-    def override_issue_service():
-        repo = SQLAlchemyIssueRepository(db_session)
-        return IssueService(repo)
-
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_issue_service] = override_issue_service
 
     with TestClient(app) as c:
         yield c
