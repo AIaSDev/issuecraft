@@ -7,7 +7,7 @@ from app.infrastructure.config import API_TITLE, API_VERSION, API_DESCRIPTION
 from app.infrastructure.database import get_db
 from app.infrastructure.persistence.sqlalchemy_repository import SQLAlchemyIssueRepository
 from app.application.issue_use_cases import IssueService
-from app.interfaces.api.issue_api import create_router
+from app.interfaces.api.issue_api import IssueRouter
 
 
 def create_app(init_db: bool = True) -> FastAPI:
@@ -17,15 +17,12 @@ def create_app(init_db: bool = True) -> FastAPI:
         description=API_DESCRIPTION,
     )
 
-    # Service factory with database dependency (infrastructure layer)
     def get_issue_service(db: Session = Depends(get_db)) -> IssueService:
-        """Create IssueService with database session."""
         repo = SQLAlchemyIssueRepository(db)
         return IssueService(repo)
 
-    # Create router with service dependency
-    issues_router = create_router(get_issue_service)
-    app.include_router(issues_router)
+    issues_router = IssueRouter(get_issue_service)
+    app.include_router(issues_router.router)
 
     @app.get("/health")
     def health_check():
