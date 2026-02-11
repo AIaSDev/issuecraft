@@ -46,6 +46,132 @@ src/app/
 - **Interfaces** define boundaries and dependency injection points.
 - **Infrastructure** implements technical details (web server, database, persistence).
 
+## Architecture Diagrams
+
+### Clean Architecture: Concentric Layers
+
+The following diagram shows the Clean Architecture concentric view with our terminology. Dependencies point **inward** – outer layers depend on inner layers, but inner layers never depend on outer layers.
+
+```mermaid
+graph TB
+    subgraph Infrastructure["Infrastructure (Outer Layer)"]
+        persistence["infrastructure.persistence<br/>(SQLAlchemy models & repository)"]
+        web["infrastructure.web<br/>(FastAPI app factory)"]
+        config["infrastructure.config<br/>(Environment configuration)"]
+        database["infrastructure.database<br/>(Database setup)"]
+    end
+    
+    subgraph Interfaces["Interfaces"]
+        api["interfaces.api<br/>(FastAPI routes & DTOs)"]
+    end
+    
+    subgraph Application["Application (Use Cases)"]
+        use_cases["application.issue_use_cases<br/>(Business logic)"]
+        repo_interface["application.repositories<br/>(Repository interfaces)"]
+    end
+    
+    subgraph Domain["Domain (Core)"]
+        entities["domain.issue<br/>(Issue entity & status enum)"]
+    end
+    
+    persistence --> repo_interface
+    persistence --> entities
+    web --> use_cases
+    web --> persistence
+    web --> api
+    config -.-> web
+    database -.-> persistence
+    
+    api --> use_cases
+    api --> entities
+    
+    use_cases --> repo_interface
+    use_cases --> entities
+    
+    repo_interface --> entities
+    
+    style Domain fill:#ffd700
+    style Application fill:#87ceeb
+    style Interfaces fill:#90ee90
+    style Infrastructure fill:#ffb6c1
+```
+
+**Key principle**: Arrows point **inward**. The outer layers (Infrastructure, Interfaces) depend on inner layers (Application, Domain), never the reverse.
+
+### Hexagonal Architecture: Request and Data Flow
+
+This diagram shows how requests flow through the layers in practice, from the browser to the domain and back.
+
+```mermaid
+graph LR
+    Browser["Browser / UI"]
+    
+    subgraph Infrastructure
+        web["infrastructure.web.app<br/>(FastAPI app)"]
+        persistence["infrastructure.persistence<br/>(SQLAlchemy repository)"]
+        db[("Database<br/>(SQLite/PostgreSQL)")]
+    end
+    
+    subgraph Interfaces
+        api["interfaces.api<br/>(API routes)"]
+    end
+    
+    subgraph Application
+        use_cases["application.use_cases<br/>(IssueService)"]
+        repo_interface["application.repositories<br/>(IssueRepository ABC)"]
+    end
+    
+    subgraph Domain
+        entities["domain<br/>(Issue entity)"]
+    end
+    
+    Browser -->|HTTP Request| web
+    web --> api
+    api --> use_cases
+    use_cases --> repo_interface
+    repo_interface -.->|implements| persistence
+    use_cases --> entities
+    persistence --> entities
+    persistence --> db
+    
+    style Domain fill:#ffd700
+    style Application fill:#87ceeb
+    style Interfaces fill:#90ee90
+    style Infrastructure fill:#ffb6c1
+```
+
+**Request flow**:
+1. Browser sends HTTP request to `infrastructure.web`
+2. FastAPI routes in `interfaces.api` receive the request
+3. API layer calls `application.use_cases` (business logic)
+4. Use cases manipulate `domain` entities
+5. Use cases call `application.repositories` interface
+6. `infrastructure.persistence` implements the repository interface
+7. Database operations execute via SQLAlchemy
+8. Response flows back through the layers
+
+### What Lives in Each Layer
+
+- **Domain** (`domain/`): Pure business entities and domain logic. No external dependencies. Contains `Issue` entity and `IssueStatus` enum.
+
+- **Application** (`application/`): Business use cases and repository interfaces. Depends only on domain. Contains `IssueService` for orchestrating business operations and `IssueRepository` abstract interface.
+
+- **Interfaces** (`interfaces/`): Adapters that expose application functionality. Contains `issue_api` with FastAPI routes and Pydantic DTOs for HTTP communication. Depends on application and domain.
+
+- **Infrastructure** (`infrastructure/`): Technical implementations and frameworks. Contains database setup, SQLAlchemy models, repository implementations, web server configuration, and environment configuration. Depends on all other layers.
+
+### Dependency Rule
+
+**The Dependency Rule**: Source code dependencies must point only inward, toward higher-level policies.
+
+- **Inner layers** (Domain, Application) define interfaces; **outer layers** (Interfaces, Infrastructure) implement them.
+- **Domain** knows nothing about databases, web frameworks, or APIs.
+- **Application** defines repository interfaces (ports) that Infrastructure implements (adapters).
+- **Interfaces** translate between external protocols (HTTP) and application use cases.
+- **Infrastructure** contains all framework-specific code and wires everything together.
+
+This structure ensures testability (mock outer layers), flexibility (swap frameworks), and maintainability (business logic isolated from technical details).
+
 ## Web UI and API docs
 
 | Path | Purpose |
