@@ -100,16 +100,16 @@ graph TB
 
 ### Hexagonal Architecture: Request and Data Flow
 
-This diagram shows how requests flow through the layers in practice, from the browser to the domain and back.
+This diagram shows how requests flow through the layers in practice, from the browser to the domain and back. Both the **Browser** and **Database** are external systems that the application connects to through infrastructure adapters.
 
 ```mermaid
 graph LR
     Browser["Browser / UI"]
+    Database[("Database<br/>(PostgreSQL over HTTP)")]
     
     subgraph Infrastructure
         web["infrastructure.web.app<br/>(FastAPI app)"]
         persistence["infrastructure.persistence<br/>(SQLAlchemy repository)"]
-        db[("Database<br/>(SQLite/PostgreSQL)")]
     end
     
     subgraph Interfaces
@@ -132,7 +132,7 @@ graph LR
     repo_interface -.->|implements| persistence
     use_cases --> entities
     persistence --> entities
-    persistence --> db
+    persistence -->|SQL| Database
     
     style Domain fill:#ffd700
     style Application fill:#87ceeb
@@ -147,8 +147,10 @@ graph LR
 4. Use cases manipulate `domain` entities
 5. Use cases call `application.repositories` interface
 6. `infrastructure.persistence` implements the repository interface
-7. Database operations execute via SQLAlchemy
+7. Persistence layer communicates with external Database via SQL
 8. Response flows back through the layers
+
+**Note**: Both Browser and Database are external to the application. The infrastructure layer provides adapters to connect to these external systems.
 
 ### What Lives in Each Layer
 
